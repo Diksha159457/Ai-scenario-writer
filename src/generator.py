@@ -9,6 +9,7 @@ from schemas import ScenarioInput, ScenarioOutput
 
 
 MODEL_NAME = "llama-3.3-70b-versatile"
+MAX_RETRIES = 3
 
 
 def get_client() -> Groq:
@@ -35,24 +36,32 @@ def call_model(client: Groq, validated_input: ScenarioInput, extra_instruction: 
     return response.choices[0].message.content.strip()
 
 
+def build_retry_instruction(error_message: str) -> str:
+    return (
+        "Return valid JSON only. Fix the validation issues from the previous attempt. "
+        "Ensure success_criteria has at least 3 distinct items, transfer_targets has at least 2 items, "
+        "strategy_chips has exactly 3 items, and all required keys are present. "
+        f"Validation feedback: {error_message}"
+    )
+
+
 def generate_scenario(payload: dict) -> ScenarioOutput:
     validated_input = ScenarioInput.model_validate(payload)
     client = get_client()
+    extra_instruction = ""
+    last_error: Exception | None = None
 
-    raw_text = call_model(client, validated_input)
+    for _ in range(MAX_RETRIES):
+        raw_text = call_model(client, validated_input, extra_instruction)
 
-    try:
-        parsed = json.loads(raw_text)
-        return ScenarioOutput.model_validate(parsed)
-    except (json.JSONDecodeError, ValidationError) as first_error:
-        retry_instruction = (
-            "Return valid JSON only. Ensure success_criteria has at least 3 items, "
-            "transfer_targets has at least 2 items, and strategy_chips has exactly 3 items."
-        )
+        try:
+            parsed = json.loads(raw_text)
+            return ScenarioOutput.model_validate(parsed)
+        except (json.JSONDecodeError, ValidationError) as error:
+            last_error = error
+            extra_instruction = build_retry_instruction(str(error))
 
-        raw_text = call_model(client, validated_input, retry_instruction)
-        parsed = json.loads(raw_text)
-        return ScenarioOutput.model_validate(parsed)
+    raise RuntimeError(f"Model failed to return a valid scenario after {MAX_RETRIES} attempts: {last_error}")
 
 
 def generate_scenario_json(payload: dict) -> str:

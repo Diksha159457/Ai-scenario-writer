@@ -61,29 +61,30 @@ This project is intentionally simple and interview-friendly:
 
 - `schemas.py` defines strict input and output validation using Pydantic
 - `prompt_builder.py` keeps the system prompt and user prompt readable
-- `generator.py` handles the Claude API call, parsing, and schema validation
+- `generator.py` handles the model call, retry-on-validation-failure, parsing, and schema validation
 - `run_demo.py` provides a simple CLI for demoing sample or live inputs
+- `run_batch.py` runs all 10 test inputs and saves the generated outputs
 
 This separation makes the system easier to explain, test, and debug in the final round.
 
 ## Tech stack
 
 - Python
-- Anthropic Claude API
+- Groq API
 - Pydantic for schema validation
 
-Required model from the brief:
+Current configured model:
 
-- `claude-sonnet-4-20250514`
+- `llama-3.3-70b-versatile`
 
 ## Setup
 
 ```bash
-cd /Users/dikshashahi/Desktop/ipl_project/ai_challenge_group2
+cd /Users/dikshashahi/Desktop/ai_challenge_group2
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-export ANTHROPIC_API_KEY="your_key_here"
+export GROQ_API_KEY="your_key_here"
 ```
 
 ## How to run
@@ -98,6 +99,18 @@ Run with a custom input:
 
 ```bash
 python3 src/run_demo.py --input-json '{"icp_type":"high_wage","milestone_code":"M03","skill_target":"stakeholder_communication","language":"en"}'
+```
+
+Run and save a sample output:
+
+```bash
+python3 src/run_demo.py --sample 0 --save
+```
+
+Run all 10 test cases and save outputs:
+
+```bash
+python3 src/run_batch.py
 ```
 
 ## Test inputs
@@ -120,6 +133,7 @@ The module validates:
 
 1. input schema before the model call
 2. output JSON after the model call
+3. retries up to 3 times if the model returns invalid or incomplete output
 
 This helps catch:
 
@@ -138,6 +152,97 @@ These are the core behaviors to explain in the final round:
 - `language` changes the output language but not the schema
 - `milestone_code` changes scenario difficulty and maturity
 - schema validation prevents silently passing broken outputs
+
+## Strong sample input
+
+```json
+{
+  "icp_type": "high_wage",
+  "milestone_code": "M03",
+  "skill_target": "stakeholder_communication",
+  "language": "en"
+}
+```
+
+## Strong sample output
+
+```json
+{
+  "episode_title": "Sprint Review Delay Escalation",
+  "scene": {
+    "setting": "Wednesday sprint review, 2 days before release, in a video call with engineering and product",
+    "time": "4:30 PM",
+    "context": "You built most of the authentication flow, but one dependency from another service team is still unclear. The product manager wants a firm delivery update in front of the group."
+  },
+  "characters": [
+    {
+      "name": "Priya",
+      "role": "Product Manager",
+      "mood": "Pressured"
+    },
+    {
+      "name": "Rohan",
+      "role": "Tech Lead",
+      "mood": "Watching closely"
+    }
+  ],
+  "antagonist_opening_line": "We have already told stakeholders this will be ready for release. Why are we hearing now that the estimate is still unclear?",
+  "strategy_chips": [
+    {
+      "id": "SC1",
+      "label": "Clarify the dependency gap",
+      "philosophy": "This works because it reduces ambiguity before making a risky commitment and shows that the delay is tied to a concrete blocker, not confusion."
+    },
+    {
+      "id": "SC2",
+      "label": "Acknowledge pressure, then realign on facts",
+      "philosophy": "This works because it de-escalates the public tension while still bringing the conversation back to the current technical reality."
+    },
+    {
+      "id": "SC3",
+      "label": "Offer a bounded next-step plan",
+      "philosophy": "This works because it replaces uncertainty with a visible recovery plan and gives stakeholders a clear decision point."
+    }
+  ],
+  "success_criteria": [
+    "The learner names the unresolved dependency clearly instead of giving a vague answer.",
+    "The learner communicates timeline risk without sounding defensive.",
+    "The learner proposes a concrete next step or checkpoint to restore alignment."
+  ],
+  "rubric": {
+    "communication": {
+      "min_score": 0,
+      "max_score": 100,
+      "what_good_looks_like": "The response is calm, direct, and easy for both technical and non-technical stakeholders to follow."
+    },
+    "composure": {
+      "min_score": 0,
+      "max_score": 100,
+      "what_good_looks_like": "The learner stays steady under public pressure and avoids sounding flustered or defensive."
+    },
+    "clarity": {
+      "min_score": 0,
+      "max_score": 100,
+      "what_good_looks_like": "The learner explains exactly what is known, what is blocked, and what can be committed right now."
+    },
+    "strategy": {
+      "min_score": 0,
+      "max_score": 100,
+      "what_good_looks_like": "The learner chooses a response that reduces ambiguity, aligns stakeholders, and moves the conversation toward a plan."
+    },
+    "outcome": {
+      "min_score": 0,
+      "max_score": 100,
+      "what_good_looks_like": "The discussion ends with shared understanding of the blocker, timeline risk, and immediate next action."
+    }
+  },
+  "transfer_targets": [
+    "Communicating blockers to stakeholders",
+    "Handling public pressure in team meetings",
+    "Turning uncertainty into an action plan"
+  ]
+}
+```
 
 ## Submission notes
 
