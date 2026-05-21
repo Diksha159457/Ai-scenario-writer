@@ -1,0 +1,62 @@
+[
+  {
+    "icp_type": "high_wage",
+    "milestone_code": "M01",
+    "skill_target": "asking_clarifying_questions",
+    "language": "en"
+  },
+  {
+    "icp_type": "high_wage",
+    "milestone_code": "M02",
+    "skill_target": "receiving_feedback",
+    "language": "en"
+  },
+  {
+    "icp_type": "high_wage",
+    "milestone_code": "M03",
+    "skill_target": "stakeholder_communication",
+    "language": "en"
+  },
+  {
+    "icp_type": "high_wage",
+    "milestone_code": "M05",
+    "skill_target": "deadline_negotiation",
+    "language": "en"
+  },
+  {
+    "icp_type": "high_wage",
+    "milestone_code": "M07",
+    "skill_target": "incident_communication",
+    "language": "en"
+  },
+  {
+    "icp_type": "low_wage",
+    "milestone_code": "M01",
+    "skill_target": "customer_handling",
+    "language": "hi"
+  },
+  {
+    "icp_type": "low_wage",
+    "milestone_code": "M02",
+    "skill_target": "basic_office_communication",
+    "language": "hi"
+  },
+  {
+    "icp_type": "low_wage",
+    "milestone_code": "M03",
+    "skill_target": "problem_reporting",
+    "language": "hi"
+  },
+  {
+    "icp_type": "low_wage",
+    "milestone_code": "M05",
+    "skill_target": "team_coordination",
+    "language": "hi"
+  },
+  {
+    "icp_type": "low_wage",
+    "milestone_code": "M07",
+    "skill_target": "handling_supervisor_pressure",
+    "language": "hi"
+  }
+]
