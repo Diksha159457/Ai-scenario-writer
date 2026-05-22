@@ -28,18 +28,12 @@ class StrategyChip(BaseModel):
     philosophy: str
 
 
-class RubricAxis(BaseModel):
-    min_score: int = Field(ge=0, le=100)
-    max_score: int = Field(ge=0, le=100)
-    what_good_looks_like: str
-
-
 class Rubric(BaseModel):
-    communication: RubricAxis
-    composure: RubricAxis
-    clarity: RubricAxis
-    strategy: RubricAxis
-    outcome: RubricAxis
+    communication: int = Field(ge=0, le=100)
+    composure: int = Field(ge=0, le=100)
+    clarity: int = Field(ge=0, le=100)
+    strategy: int = Field(ge=0, le=100)
+    outcome: int = Field(ge=0, le=100)
 
 
 class ScenarioOutput(BaseModel):

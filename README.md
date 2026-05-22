@@ -36,7 +36,7 @@ The module returns:
 - `antagonist_opening_line`
 - `strategy_chips[3] { id, label, philosophy }`
 - `success_criteria[]`
-- `rubric { communication, composure, clarity, strategy, outcome }`
+- `rubric { communication, composure, clarity, strategy, outcome }` where each field is a numeric score from `0` to `100`
 - `transfer_targets[]`
 
 ## Project structure
@@ -100,8 +100,6 @@ Run the UI:
 ```bash
 streamlit run app.py
 ```
-
-The UI also supports a language comparison mode so you can show the same scenario in English and Hindi side by side.
 
 Run with a custom input:
 
@@ -218,31 +216,11 @@ These are the core behaviors to explain in the final round:
     "The learner proposes a concrete next step or checkpoint to restore alignment."
   ],
   "rubric": {
-    "communication": {
-      "min_score": 0,
-      "max_score": 100,
-      "what_good_looks_like": "The response is calm, direct, and easy for both technical and non-technical stakeholders to follow."
-    },
-    "composure": {
-      "min_score": 0,
-      "max_score": 100,
-      "what_good_looks_like": "The learner stays steady under public pressure and avoids sounding flustered or defensive."
-    },
-    "clarity": {
-      "min_score": 0,
-      "max_score": 100,
-      "what_good_looks_like": "The learner explains exactly what is known, what is blocked, and what can be committed right now."
-    },
-    "strategy": {
-      "min_score": 0,
-      "max_score": 100,
-      "what_good_looks_like": "The learner chooses a response that reduces ambiguity, aligns stakeholders, and moves the conversation toward a plan."
-    },
-    "outcome": {
-      "min_score": 0,
-      "max_score": 100,
-      "what_good_looks_like": "The discussion ends with shared understanding of the blocker, timeline risk, and immediate next action."
-    }
+    "communication": 88,
+    "composure": 82,
+    "clarity": 91,
+    "strategy": 86,
+    "outcome": 84
   },
   "transfer_targets": [
     "Communicating blockers to stakeholders",

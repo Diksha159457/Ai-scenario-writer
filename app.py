@@ -6,6 +6,22 @@ from pydantic import ValidationError
 from src.generator import generate_scenario
 from src.schemas import ScenarioInput
 
+HIGH_WAGE_SKILLS = [
+    "asking_clarifying_questions",
+    "receiving_feedback",
+    "stakeholder_communication",
+    "deadline_negotiation",
+    "incident_communication",
+]
+
+LOW_WAGE_SKILLS = [
+    "customer_handling",
+    "basic_office_communication",
+    "problem_reporting",
+    "team_coordination",
+    "handling_supervisor_pressure",
+]
+
 
 st.set_page_config(
     page_title="Scenario Writer",
@@ -20,13 +36,28 @@ def apply_styles() -> None:
         <style>
         .stApp {
             background:
-                radial-gradient(circle at 0% 0%, rgba(241, 199, 122, 0.30), transparent 24%),
-                radial-gradient(circle at 100% 0%, rgba(102, 168, 255, 0.22), transparent 26%),
-                linear-gradient(180deg, #f5efe5 0%, #fbfaf7 44%, #edf4fb 100%);
+                radial-gradient(circle at 0% 0%, rgba(241, 199, 122, 0.16), transparent 24%),
+                radial-gradient(circle at 100% 0%, rgba(102, 168, 255, 0.14), transparent 26%),
+                linear-gradient(180deg, #f5efe5 0%, #faf8f4 46%, #eef4fa 100%);
         }
         .block-container {
             padding-top: 1.2rem;
             padding-bottom: 2rem;
+        }
+        h3 {
+            color: #132238 !important;
+            font-weight: 800 !important;
+        }
+        label, .stSelectbox label, .stTextInput label {
+            color: #1f2f46 !important;
+            font-weight: 700 !important;
+        }
+        .stCheckbox label {
+            color: #1f2f46 !important;
+            font-weight: 600 !important;
+        }
+        [data-testid="stMarkdownContainer"] p {
+            color: #31435d;
         }
         .hero {
             padding: 1.9rem;
@@ -159,18 +190,13 @@ def apply_styles() -> None:
             color: #132238;
             font-size: 1rem;
         }
-        .compare-label {
-            display: inline-block;
-            padding: 0.3rem 0.7rem;
-            border-radius: 999px;
-            background: #16314d;
-            color: white;
-            font-size: 0.78rem;
-            font-weight: 700;
-            margin-bottom: 0.65rem;
-        }
         .json-block pre {
             border-radius: 18px;
+        }
+        .input-note {
+            color: #41526d;
+            font-size: 0.93rem;
+            line-height: 1.55;
         }
         </style>
         """,
@@ -194,8 +220,8 @@ def render_header() -> None:
                     <small>Demo Focus</small>
                     <strong>Structured + Personalized + Explainable</strong>
                     <span>
-                        Show the same scenario logic across different ICPs and compare how the output
-                        changes when only the language changes from English to Hindi or vice versa.
+                        Show how one learner profile becomes one clear workplace scenario with
+                        context, tension, strategy options, and evaluation criteria.
                     </span>
                 </div>
             </div>
@@ -304,8 +330,10 @@ def render_rubric(result: dict) -> None:
                 f"""
                 <div class="soft-card">
                     <strong style="text-transform:capitalize;">{axis_name}</strong><br/>
-                    <span class="chip">{axis["min_score"]} - {axis["max_score"]}</span><br/><br/>
-                    <span style="color:#31435d;">{axis["what_good_looks_like"]}</span>
+                    <div style="font-size:1.7rem; font-weight:800; color:#132238; margin-top:0.35rem;">
+                        {axis}
+                    </div>
+                    <span class="chip">out of 100</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -319,9 +347,7 @@ def render_json(result: dict) -> None:
         st.markdown("</div>", unsafe_allow_html=True)
 
 
-def render_result_view(result: dict, payload: dict, label: str | None = None) -> None:
-    if label:
-        st.markdown(f'<div class="compare-label">{label}</div>', unsafe_allow_html=True)
+def render_result_view(result: dict, payload: dict) -> None:
     render_metric_strip(payload)
     st.markdown(
         f"""
@@ -382,14 +408,11 @@ def main() -> None:
                 "Milestone Code",
                 ["M01", "M02", "M03", "M04", "M05", "M06", "M07"],
             )
+            skill_options = HIGH_WAGE_SKILLS if icp_type == "high_wage" else LOW_WAGE_SKILLS
             default_skill = "stakeholder_communication" if icp_type == "high_wage" else "problem_reporting"
-            skill_target = st.text_input("Skill Target", value=default_skill)
+            default_index = skill_options.index(default_skill) if default_skill in skill_options else 0
+            skill_target = st.selectbox("Skill Target", skill_options, index=default_index)
             language = st.selectbox("Primary Language", ["en", "hi"])
-            compare_languages = st.checkbox(
-                "Compare Hindi vs English for the same scenario",
-                value=False,
-                help="Useful for showing that language changes expression, not scenario identity.",
-            )
             submitted = st.form_submit_button("Generate Scenario", use_container_width=True)
 
         payload = build_payload(icp_type, milestone_code, skill_target, language)
@@ -400,10 +423,10 @@ def main() -> None:
         st.markdown(
             """
             <div class="soft-card">
-                <div class="section-title">How To Explain This UI</div>
-                <div style="color:#31435d;">
-                    Use the primary mode to show one clean scenario. Use compare mode to show that
-                    the same low_wage or high_wage context stays stable while only the output language changes.
+                <div class="section-title">How To Present This</div>
+                <div class="input-note">
+                    Pick one learner profile, generate the scenario, then explain how the setting,
+                    characters, opening tension, and strategy options reflect the chosen ICP and skill target.
                 </div>
             </div>
             """,
@@ -414,26 +437,11 @@ def main() -> None:
         st.markdown("### Generated Scenario")
         if submitted:
             try:
-                if compare_languages:
-                    alt_language = "hi" if language == "en" else "en"
-                    compare_payload = build_payload(icp_type, milestone_code, skill_target, alt_language)
+                with st.spinner("Creating a workplace scenario..."):
+                    result, validated_payload = generate_validated_scenario(payload)
 
-                    with st.spinner("Creating both language versions..."):
-                        primary_result, primary_payload = generate_validated_scenario(payload)
-                        compare_result, compare_validated_payload = generate_validated_scenario(compare_payload)
-
-                    st.success("Comparison ready. The ICP and skill remain the same; only the language changes.")
-                    col_a, col_b = st.columns(2, gap="large")
-                    with col_a:
-                        render_result_view(primary_result, primary_payload, f"Primary - {primary_payload['language']}")
-                    with col_b:
-                        render_result_view(compare_result, compare_validated_payload, f"Comparison - {compare_validated_payload['language']}")
-                else:
-                    with st.spinner("Creating a workplace scenario..."):
-                        result, validated_payload = generate_validated_scenario(payload)
-
-                    st.success("Scenario generated successfully.")
-                    render_result_view(result, validated_payload)
+                st.success("Scenario generated successfully.")
+                render_result_view(result, validated_payload)
 
             except ValidationError as error:
                 st.error(f"Input validation failed: {error}")

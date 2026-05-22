@@ -24,20 +24,22 @@ You must obey these rules:
    - high_wage: software engineering, product, QA, support engineering, sprint reviews, bug triage, code reviews, deadlines, cross-functional tech workplace contexts
    - low_wage: customer support, front desk, data entry, delivery-to-office transitions, supervisor pressure, practical and confidence-building contexts
 9. If language is 'hi', produce natural Hindi in Devanagari script while keeping JSON keys in English.
-10. Rubric axes must clearly explain what strong performance looks like.
-11. success_criteria must contain at least 3 distinct bullet-like strings.
-12. transfer_targets must contain at least 2 items.
-13. strategy_chips must contain exactly 3 items.
-14. If any required list is too short, regenerate mentally before answering.
-15. Avoid generic scenes like "conference room", "startup office", or "team meeting" unless the input is too broad. Prefer concrete, high-friction moments.
-16. The antagonist_opening_line should sound like a real person under workplace pressure, not a training manual.
-17. The 3 strategy_chips must differ in philosophy, not just wording. Examples of different philosophies include clarifying, de-escalating, aligning, boundary-setting, or proposing a plan.
-18. Do not make characters feel random. Their roles should directly create the tension in the scene.
-19. For high_wage scenarios, prefer specific tech moments like sprint standup, release review, production issue, PR feedback, stakeholder sync, or project estimation.
-20. For low_wage scenarios, prefer grounded moments like customer escalation, shift handover, supervisor check-in, missed process step, office coordination issue, or data-entry accuracy pressure.
-21. For Hindi output, keep the language simple, natural, and spoken. Avoid heavy translation style or overly formal vocabulary.
-22. success_criteria should be observable and measurable, not generic.
-23. Vary names, roles, settings, and tensions across scenarios. Do not default to the same template.
+10. rubric must contain only these 5 numeric fields: communication, composure, clarity, strategy, outcome.
+11. Each rubric field must be an integer from 0 to 100.
+12. Use realistic score values based on the scenario. Do not make all rubric values identical unless truly necessary.
+13. success_criteria must contain at least 3 distinct bullet-like strings.
+14. transfer_targets must contain at least 2 items.
+15. strategy_chips must contain exactly 3 items.
+16. If any required list is too short, regenerate mentally before answering.
+17. Avoid generic scenes like "conference room", "startup office", or "team meeting" unless the input is too broad. Prefer concrete, high-friction moments.
+18. The antagonist_opening_line should sound like a real person under workplace pressure, not a training manual.
+19. The 3 strategy_chips must differ in philosophy, not just wording. Examples of different philosophies include clarifying, de-escalating, aligning, boundary-setting, or proposing a plan.
+20. Do not make characters feel random. Their roles should directly create the tension in the scene.
+21. For high_wage scenarios, prefer specific tech moments like sprint standup, release review, production issue, PR feedback, stakeholder sync, or project estimation.
+22. For low_wage scenarios, prefer grounded moments like customer escalation, shift handover, supervisor check-in, missed process step, office coordination issue, or data-entry accuracy pressure.
+23. For Hindi output, keep the language simple, natural, and spoken. Avoid heavy translation style or overly formal vocabulary.
+24. success_criteria should be observable and measurable, not generic.
+25. Vary names, roles, settings, and tensions across scenarios. Do not default to the same template.
 """.strip()
 
 
@@ -66,31 +68,11 @@ def build_user_prompt(payload: ScenarioInput) -> str:
         ],
         "success_criteria": ["string"],
         "rubric": {
-            "communication": {
-                "min_score": 0,
-                "max_score": 100,
-                "what_good_looks_like": "string",
-            },
-            "composure": {
-                "min_score": 0,
-                "max_score": 100,
-                "what_good_looks_like": "string",
-            },
-            "clarity": {
-                "min_score": 0,
-                "max_score": 100,
-                "what_good_looks_like": "string",
-            },
-            "strategy": {
-                "min_score": 0,
-                "max_score": 100,
-                "what_good_looks_like": "string",
-            },
-            "outcome": {
-                "min_score": 0,
-                "max_score": 100,
-                "what_good_looks_like": "string",
-            },
+            "communication": 0,
+            "composure": 0,
+            "clarity": 0,
+            "strategy": 0,
+            "outcome": 0,
         },
         "transfer_targets": ["string"],
     }
@@ -110,6 +92,7 @@ Additional guidance:
 - high_wage outputs should feel clearly tied to tech or corporate skill-building.
 - low_wage outputs should feel simpler, more practical, and more confidence-building.
 - Hindi output should sound natural to a real Hindi speaker and not like direct translation.
+- rubric values must be integer scores between 0 and 100.
 - success_criteria must contain at least 3 items.
 - transfer_targets must contain at least 2 items.
 - strategy_chips must contain exactly 3 items.
