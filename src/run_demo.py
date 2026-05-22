@@ -2,7 +2,10 @@ import argparse
 import json
 from pathlib import Path
 
-from generator import generate_scenario_json
+try:
+    from .generator import generate_scenario_json
+except ImportError:
+    from generator import generate_scenario_json
 
 
 TEST_INPUTS_PATH = Path(__file__).resolve().parent.parent / "tests" / "test_inputs.json"

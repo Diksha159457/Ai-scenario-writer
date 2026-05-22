@@ -1,6 +1,9 @@
 import json
 
-from schemas import ScenarioInput
+try:
+    from .schemas import ScenarioInput
+except ImportError:
+    from schemas import ScenarioInput
 
 
 def build_system_prompt() -> str:

@@ -95,6 +95,14 @@ Run one predefined sample:
 python3 src/run_demo.py --sample 0
 ```
 
+Run the UI:
+
+```bash
+streamlit run app.py
+```
+
+The UI also supports a language comparison mode so you can show the same scenario in English and Hindi side by side.
+
 Run with a custom input:
 
 ```bash

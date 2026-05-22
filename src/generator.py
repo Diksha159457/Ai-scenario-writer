@@ -4,8 +4,12 @@ import os
 from groq import Groq
 from pydantic import ValidationError
 
-from prompt_builder import build_system_prompt, build_user_prompt
-from schemas import ScenarioInput, ScenarioOutput
+try:
+    from .prompt_builder import build_system_prompt, build_user_prompt
+    from .schemas import ScenarioInput, ScenarioOutput
+except ImportError:
+    from prompt_builder import build_system_prompt, build_user_prompt
+    from schemas import ScenarioInput, ScenarioOutput
 
 
 MODEL_NAME = "llama-3.3-70b-versatile"
@@ -33,7 +37,29 @@ def call_model(client: Groq, validated_input: ScenarioInput, extra_instruction: 
         ],
     )
 
-    return response.choices[0].message.content.strip()
+    content = response.choices[0].message.content
+    if content is None:
+        return ""
+    return content.strip()
+
+
+def extract_json_text(raw_text: str) -> str:
+    cleaned = raw_text.strip()
+    if not cleaned:
+        raise json.JSONDecodeError("Empty model response", cleaned, 0)
+
+    if cleaned.startswith("```"):
+        cleaned = cleaned.strip("`").strip()
+        if cleaned.startswith("json"):
+            cleaned = cleaned[4:].strip()
+
+    first_brace = cleaned.find("{")
+    last_brace = cleaned.rfind("}")
+
+    if first_brace == -1 or last_brace == -1 or last_brace <= first_brace:
+        raise json.JSONDecodeError("Could not find JSON object in model response", cleaned, 0)
+
+    return cleaned[first_brace:last_brace + 1]
 
 
 def build_retry_instruction(error_message: str) -> str:
@@ -50,18 +76,25 @@ def generate_scenario(payload: dict) -> ScenarioOutput:
     client = get_client()
     extra_instruction = ""
     last_error: Exception | None = None
+    last_raw_text = ""
 
     for _ in range(MAX_RETRIES):
         raw_text = call_model(client, validated_input, extra_instruction)
+        last_raw_text = raw_text
 
         try:
-            parsed = json.loads(raw_text)
+            json_text = extract_json_text(raw_text)
+            parsed = json.loads(json_text)
             return ScenarioOutput.model_validate(parsed)
         except (json.JSONDecodeError, ValidationError) as error:
             last_error = error
             extra_instruction = build_retry_instruction(str(error))
 
-    raise RuntimeError(f"Model failed to return a valid scenario after {MAX_RETRIES} attempts: {last_error}")
+    snippet = last_raw_text[:400].replace("\n", " ")
+    raise RuntimeError(
+        f"Model failed to return a valid scenario after {MAX_RETRIES} attempts: {last_error}. "
+        f"Last raw response snippet: {snippet!r}"
+    )
 
 
 def generate_scenario_json(payload: dict) -> str:

@@ -1,7 +1,10 @@
 import json
 from pathlib import Path
 
-from generator import generate_scenario_json
+try:
+    from .generator import generate_scenario_json
+except ImportError:
+    from generator import generate_scenario_json
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
