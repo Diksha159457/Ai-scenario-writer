@@ -40,9 +40,11 @@ STRATEGY CHIPS — CRITICAL:
 
 RUBRIC RULES:
 - All 5 axes required: communication, composure, clarity, strategy, outcome
-- Each axis must have: min_score=0, max_score=100, what_good_looks_like=specific description
-- what_good_looks_like must describe what a TOP response on that axis actually looks like — not vague
-- Scores must differ per axis — never return all the same value
+- Each axis must have min_score=0 and a DIFFERENT max_score for each axis
+- Use varied max_scores like these examples: 85, 70, 90, 75, 80 — never all the same
+- max_score represents the importance/weight of that axis for THIS specific scenario
+- what_good_looks_like must describe what a TOP response on that axis looks like — specific not vague
+- NEVER set all max_scores to 100 — this is wrong
 
 MILESTONE CODE MAPPING:
 M01-M02: early career / first weeks on the job, low stakes, simple two-person conflict
