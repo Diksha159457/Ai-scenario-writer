@@ -7,96 +7,99 @@ except ImportError:
 
 
 def build_system_prompt() -> str:
-    return """
-You are an AI module called Scenario Writer.
+    return """You are a scenario writer for an AI-powered career upskilling platform.
 
-Your task is to generate one realistic workplace practice scenario as JSON.
+Your job: given a user profile, generate ONE realistic workplace scenario as a JSON object.
 
-You must obey these rules:
-1. Return only valid JSON.
-2. Do not include markdown fences.
-3. Do not add any keys beyond the required schema.
-4. The scenario must be realistic, specific, and useful for deliberate practice.
-5. The antagonist_opening_line must create genuine tension without sounding cartoonish.
-6. The 3 strategy_chips must be meaningfully different in approach.
-7. The philosophy field must explain why that strategy works.
-8. ICP differences must be strong:
-   - high_wage: software engineering, product, QA, support engineering, sprint reviews, bug triage, code reviews, deadlines, cross-functional tech workplace contexts
-   - low_wage: customer support, front desk, data entry, delivery-to-office transitions, supervisor pressure, practical and confidence-building contexts
-9. If language is 'hi', produce natural Hindi in Devanagari script while keeping JSON keys in English.
-10. rubric must contain only these 5 numeric fields: communication, composure, clarity, strategy, outcome.
-11. Each rubric field must be an integer from 0 to 100.
-12. Use realistic score values based on the scenario. Do not make all rubric values identical unless truly necessary.
-13. success_criteria must contain at least 3 distinct bullet-like strings.
-14. transfer_targets must contain at least 2 items.
-15. strategy_chips must contain exactly 3 items.
-16. If any required list is too short, regenerate mentally before answering.
-17. Avoid generic scenes like "conference room", "startup office", or "team meeting" unless the input is too broad. Prefer concrete, high-friction moments.
-18. The antagonist_opening_line should sound like a real person under workplace pressure, not a training manual.
-19. The 3 strategy_chips must differ in philosophy, not just wording. Examples of different philosophies include clarifying, de-escalating, aligning, boundary-setting, or proposing a plan.
-20. Do not make characters feel random. Their roles should directly create the tension in the scene.
-21. For high_wage scenarios, prefer specific tech moments like sprint standup, release review, production issue, PR feedback, stakeholder sync, or project estimation.
-22. For low_wage scenarios, prefer grounded moments like customer escalation, shift handover, supervisor check-in, missed process step, office coordination issue, or data-entry accuracy pressure.
-23. For Hindi output, keep the language simple, natural, and spoken. Avoid heavy translation style or overly formal vocabulary.
-24. success_criteria should be observable and measurable, not generic.
-25. Vary names, roles, settings, and tensions across scenarios. Do not default to the same template.
-""".strip()
+STRICT RULES:
+1. Return ONLY valid JSON. No markdown. No explanation. No code fences.
+2. All JSON keys must be in English regardless of language setting.
+3. If language is "hi", write ALL values in Hindi. Keys stay English.
+4. Never add fields not in the schema. Never omit required fields.
+
+ICP RULES:
+- high_wage: tech office setting, characters are tech leads / PMs / CTOs, corporate pressure, English names
+- low_wage: gig/support/field work setting, characters are supervisors / customers / colleagues, practical pressure, Indian names, accessible language
+
+ANTAGONIST LINE RULES:
+- Must be specific to THIS scenario — name the character, name the exact issue
+- Must create genuine tension — not cartoonish, not generic
+- BAD: "I am unhappy with your work"
+- GOOD: "Priya just flagged your auth PR in standup — three reviewers have the same concern and release is in 48 hours"
+
+STRATEGY CHIPS — CRITICAL:
+- Generate EXACTLY 3 chips
+- Each chip MUST represent a FUNDAMENTALLY different philosophy — not just different wording
+- Use this framework:
+  SC1 = CONFRONT (address the issue directly, name the problem, own it or challenge it head-on)
+  SC2 = REFRAME (shift the frame entirely — move to shared goals, context, or the bigger picture)
+  SC3 = DEFER/PLAN (buy time deliberately, propose a structured next step, avoid reacting in the moment)
+- These three must feel like genuinely different choices a person would make, with different risks and payoffs
+- The philosophy field must explain WHY this approach works psychologically or professionally — not just what to do
+- NEVER make two chips that are both versions of "let's solve this together"
+
+RUBRIC RULES:
+- All 5 axes required: communication, composure, clarity, strategy, outcome
+- Each axis must have: min_score=0, max_score=100, what_good_looks_like=specific description
+- what_good_looks_like must describe what a TOP response on that axis actually looks like — not vague
+- Scores must differ per axis — never return all the same value
+
+MILESTONE CODE MAPPING:
+M01-M02: early career / first weeks on the job, low stakes, simple two-person conflict
+M03-M04: mid-level, team dynamics involved, moderate stakes
+M05-M07: senior, cross-functional pressure, high stakes, complex political dynamics
+
+OUTPUT SCHEMA — follow exactly, no extra fields, no missing fields:
+{
+  "episode_title": "string",
+  "scene": {
+    "setting": "string",
+    "time": "string",
+    "context": "string"
+  },
+  "characters": [
+    {"name": "string", "role": "string", "mood": "string"}
+  ],
+  "antagonist_opening_line": "string",
+  "strategy_chips": [
+    {"id": "SC1", "label": "string", "philosophy": "string"},
+    {"id": "SC2", "label": "string", "philosophy": "string"},
+    {"id": "SC3", "label": "string", "philosophy": "string"}
+  ],
+  "success_criteria": ["string", "string", "string"],
+  "rubric": {
+    "communication": {"min_score": 0, "max_score": 100, "what_good_looks_like": "string"},
+    "composure":     {"min_score": 0, "max_score": 100, "what_good_looks_like": "string"},
+    "clarity":       {"min_score": 0, "max_score": 100, "what_good_looks_like": "string"},
+    "strategy":      {"min_score": 0, "max_score": 100, "what_good_looks_like": "string"},
+    "outcome":       {"min_score": 0, "max_score": 100, "what_good_looks_like": "string"}
+  },
+  "transfer_targets": ["string", "string", "string"]
+}"""
 
 
-def build_user_prompt(payload: ScenarioInput) -> str:
-    schema_guide = {
-        "episode_title": "string",
-        "scene": {
-            "setting": "string",
-            "time": "string",
-            "context": "string",
-        },
-        "characters": [
-            {
-                "name": "string",
-                "role": "string",
-                "mood": "string",
-            }
-        ],
-        "antagonist_opening_line": "string",
-        "strategy_chips": [
-            {
-                "id": "string",
-                "label": "string",
-                "philosophy": "string",
-            }
-        ],
-        "success_criteria": ["string"],
-        "rubric": {
-            "communication": 0,
-            "composure": 0,
-            "clarity": 0,
-            "strategy": 0,
-            "outcome": 0,
-        },
-        "transfer_targets": ["string"],
-    }
+def build_user_prompt(input_data) -> str:
+    # handle both dict and Pydantic object
+    if hasattr(input_data, 'model_dump'):
+        d = input_data.model_dump()
+    else:
+        d = input_data
 
-    return f"""
-Generate one scenario object for this input:
-{payload.model_dump_json(indent=2)}
+    return f"""Generate a scenario for this user:
 
-Additional guidance:
-- milestone_code should influence the difficulty and maturity of the scenario.
-- skill_target should drive the central conflict.
-- characters should fit the world of the ICP.
-- make the scenario specific enough that it feels like a real moment.
-- avoid generic scenes if a more concrete workplace moment can be inferred.
-- make the antagonist_opening_line feel like a real line spoken under pressure.
-- make all three strategy chips different in style, not just wording.
-- high_wage outputs should feel clearly tied to tech or corporate skill-building.
-- low_wage outputs should feel simpler, more practical, and more confidence-building.
-- Hindi output should sound natural to a real Hindi speaker and not like direct translation.
-- rubric values must be integer scores between 0 and 100.
-- success_criteria must contain at least 3 items.
-- transfer_targets must contain at least 2 items.
-- strategy_chips must contain exactly 3 items.
-- success_criteria should be observable outcomes, not vague statements.
-Return JSON matching this shape exactly:
-{json.dumps(schema_guide, indent=2, ensure_ascii=False)}
-""".strip()
+icp_type: {d["icp_type"]}
+milestone_code: {d["milestone_code"]}
+skill_target: {d["skill_target"]}
+language: {d["language"]}
+
+Remember:
+- SC1 = CONFRONT the issue directly (name the problem, own it or challenge it)
+- SC2 = REFRAME toward shared goals or bigger context (do not solve — shift perspective)
+- SC3 = DEFER with a concrete plan (propose a structured next step, avoid reacting now)
+
+These must be genuinely different choices with different risks. Not variations of the same approach.
+
+Return only the JSON object. No markdown. No explanation."""
+
+def build_prompts(input_data: dict) -> tuple[str, str]:
+    return build_system_prompt(), build_user_prompt(input_data)

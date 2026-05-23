@@ -319,6 +319,13 @@ def render_list_section(title: str, items: list[str]) -> None:
 def render_rubric(result: dict) -> None:
     st.markdown('<div class="section-title">Rubric</div>', unsafe_allow_html=True)
     rubric_items = list(result["rubric"].items())
+    axis_icons = {
+        "communication": "💬",
+        "composure": "🧘",
+        "clarity": "🔍",
+        "strategy": "♟️",
+        "outcome": "🎯",
+    }
     for left, right in zip(rubric_items[::2], rubric_items[1::2] + [None] * (len(rubric_items) % 2)):
         cols = st.columns(2)
         pairs = [left, right]
@@ -326,14 +333,22 @@ def render_rubric(result: dict) -> None:
             if pair is None:
                 continue
             axis_name, axis = pair
+            icon = axis_icons.get(axis_name, "📊")
+            score = axis.get("max_score", axis) if isinstance(axis, dict) else axis
+            what_good = axis.get("what_good_looks_like", "") if isinstance(axis, dict) else ""
+            min_s = axis.get("min_score", 0) if isinstance(axis, dict) else 0
+            max_s = axis.get("max_score", score) if isinstance(axis, dict) else score
             col.markdown(
                 f"""
                 <div class="soft-card">
-                    <strong style="text-transform:capitalize;">{axis_name}</strong><br/>
-                    <div style="font-size:1.7rem; font-weight:800; color:#132238; margin-top:0.35rem;">
-                        {axis}
-                    </div>
-                    <span class="chip">out of 100</span>
+                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
+                  <span style="font-size:1.3rem;">{icon}</span>
+                  <strong style="text-transform:capitalize; font-size:1rem; color:#122033;">{axis_name}</strong>
+                </div>
+                <div style="font-size:2rem; font-weight:800; color:#132238; line-height:1;">{max_s}</div>
+                <div style="font-size:0.78rem; color:#66758b; margin-bottom:0.5rem;">out of 100</div>
+                <span class="chip">{min_s} – {max_s}</span><br/><br/>
+                <span style="color:#31435d; font-size:0.88rem;">{what_good}</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -390,7 +405,7 @@ def build_payload(icp_type: str, milestone_code: str, skill_target: str, languag
 
 def generate_validated_scenario(payload: dict) -> tuple[dict, dict]:
     validated_payload = ScenarioInput.model_validate(payload)
-    scenario = generate_scenario(validated_payload.model_dump())
+    scenario = generate_scenario(validated_payload.model_dump())  # pass dict
     return scenario.model_dump(), validated_payload.model_dump()
 
 
