@@ -4,6 +4,10 @@ An AI-powered scenario generation engine that creates structured workplace simul
 
 This project was built for the AI Engineering Challenge and focuses on generating realistic, emotionally grounded practice conversations that can be rendered directly inside a scenario-player application.
 
+
+### Link to Loom
+
+<https://loom.com/share/d02e80deb330482588550dbe79527ecb>
 ---
 
 # 🚀 Overview
