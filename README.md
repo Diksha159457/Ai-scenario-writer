@@ -1,165 +1,14 @@
-# AI Engineering Challenge - Group 2: Scenario Writer
+# AI Engineering Challenge – Group 2: Scenario Writer
 
-This repository implements the `Scenario Writer` AI module from the challenge brief.
+An AI-powered scenario generation engine that creates structured workplace simulations for different learner personas using LLMs, prompt engineering, and schema validation.
 
-The module takes a small input JSON:
+This project was built for the AI Engineering Challenge and focuses on generating realistic, emotionally grounded practice conversations that can be rendered directly inside a scenario-player application.
 
-- `icp_type`
-- `milestone_code`
-- `skill_target`
-- `language`
+---
 
-and returns one structured scenario JSON that can be rendered directly by the scenario player.
+# 🚀 Overview
 
-## Problem statement
-
-The goal is to generate realistic practice scenarios for two different user types:
-
-- `high_wage`: engineering or tech-career users who need professional workplace scenarios
-- `low_wage`: users transitioning from gig/support work who need practical, accessible workplace scenarios
-
-The output must:
-
-- follow a fixed JSON schema
-- meaningfully differentiate between ICPs
-- produce natural English or Hindi output
-- create realistic tension through the `antagonist_opening_line`
-- offer 3 genuinely different strategy options
-
-## Output schema
-
-The module returns:
-
-- `episode_title`
-- `scene { setting, time, context }`
-- `characters[] { name, role, mood }`
-- `antagonist_opening_line`
-- `strategy_chips[3] { id, label, philosophy }`
-- `success_criteria[]`
-- `rubric { communication, composure, clarity, strategy, outcome }` where each field is a numeric score from `0` to `100`
-- `transfer_targets[]`
-
-## Project structure
-
-```text
-ai_challenge_group2/
-├── README.md
-├── requirements.txt
-├── prompt_defense.md
-├── tests/
-│   └── test_inputs.json
-└── src/
-    ├── generator.py
-    ├── prompt_builder.py
-    ├── run_demo.py
-    └── schemas.py
-```
-
-## Design choices
-
-This project is intentionally simple and interview-friendly:
-
-- `schemas.py` defines strict input and output validation using Pydantic
-- `prompt_builder.py` keeps the system prompt and user prompt readable
-- `generator.py` handles the model call, retry-on-validation-failure, parsing, and schema validation
-- `run_demo.py` provides a simple CLI for demoing sample or live inputs
-- `run_batch.py` runs all 10 test inputs and saves the generated outputs
-
-This separation makes the system easier to explain, test, and debug in the final round.
-
-## Tech stack
-
-- Python
-- Groq API
-- Pydantic for schema validation
-
-Current configured model:
-
-- `llama-3.3-70b-versatile`
-
-## Setup
-
-```bash
-cd /Users/dikshashahi/Desktop/ai_challenge_group2
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-export GROQ_API_KEY="your_key_here"
-```
-
-## How to run
-
-Run one predefined sample:
-
-```bash
-python3 src/run_demo.py --sample 0
-```
-
-Run the UI:
-
-```bash
-streamlit run app.py
-```
-
-Run with a custom input:
-
-```bash
-python3 src/run_demo.py --input-json '{"icp_type":"high_wage","milestone_code":"M03","skill_target":"stakeholder_communication","language":"en"}'
-```
-
-Run and save a sample output:
-
-```bash
-python3 src/run_demo.py --sample 0 --save
-```
-
-Run all 10 test cases and save outputs:
-
-```bash
-python3 src/run_batch.py
-```
-
-## Test inputs
-
-The file `tests/test_inputs.json` contains 10 sample inputs:
-
-- 5 `high_wage`
-- 5 `low_wage`
-
-These are intended to help demonstrate:
-
-- schema consistency
-- ICP differentiation
-- varied skills and milestone levels
-- English and Hindi handling
-
-## Validation strategy
-
-The module validates:
-
-1. input schema before the model call
-2. output JSON after the model call
-3. retries up to 3 times if the model returns invalid or incomplete output
-
-This helps catch:
-
-- invalid input values
-- malformed JSON
-- missing fields
-- unexpected fields
-- structurally incorrect responses
-
-## Demo talking points
-
-These are the core behaviors to explain in the final round:
-
-- `icp_type` changes the workplace world, characters, and tone
-- `skill_target` changes the central tension and the strategy options
-- `language` changes the output language but not the schema
-- `milestone_code` changes scenario difficulty and maturity
-- schema validation prevents silently passing broken outputs
-
-## Strong sample input
+The `Scenario Writer` module accepts a small structured input:
 
 ```json
 {
@@ -170,80 +19,460 @@ These are the core behaviors to explain in the final round:
 }
 ```
 
-## Strong sample output
+and generates a complete scenario JSON containing:
+
+* realistic workplace tension
+* characters and emotional context
+* strategy choices
+* success criteria
+* evaluation rubric
+* transferable learning outcomes
+
+The system is designed to simulate difficult workplace interactions in a safe, structured, and scalable format.
+
+---
+
+# 🎯 Core Objective
+
+The goal is to generate high-quality roleplay scenarios for two distinct learner ICPs:
+
+## 1. `high_wage`
+
+Professional workplace scenarios for:
+
+* engineering teams
+* tech employees
+* product stakeholders
+* corporate communication
+
+Examples:
+
+* sprint escalation
+* deadline negotiation
+* stakeholder conflict
+* cross-functional misalignment
+
+---
+
+## 2. `low_wage`
+
+Practical and accessible workplace simulations for users transitioning from:
+
+* gig work
+* support roles
+* retail/service environments
+
+Examples:
+
+* shift communication
+* customer conflict
+* supervisor interactions
+* workplace misunderstandings
+
+---
+
+# ✅ Key Requirements
+
+The generated output must:
+
+* follow a strict JSON schema
+* create realistic interpersonal tension
+* adapt tone based on ICP type
+* support English and Hindi output
+* provide 3 meaningfully different strategy paths
+* remain structurally valid for downstream rendering systems
+
+---
+
+# 🧠 Example Workflow
+
+```text
+User Input
+    ↓
+Input Validation (Pydantic)
+    ↓
+Prompt Builder
+    ↓
+Groq LLM API
+    ↓
+JSON Parsing
+    ↓
+Schema Validation
+    ↓
+Retry if Invalid
+    ↓
+Structured Scenario Output
+```
+
+---
+
+# 📂 Project Structure
+
+```text
+ai_challenge_group2/
+├── README.md
+├── requirements.txt
+├── prompt_defense.md
+├── app.py
+├── run_batch.py
+│
+├── tests/
+│   └── test_inputs.json
+│
+└── src/
+    ├── generator.py
+    ├── prompt_builder.py
+    ├── run_demo.py
+    └── schemas.py
+```
+
+---
+
+# ⚙️ Architecture & Design Choices
+
+The project intentionally separates responsibilities for clarity, maintainability, and interview discussion.
+
+## `schemas.py`
+
+Defines:
+
+* input validation
+* output validation
+* strict schema enforcement
+
+Built using:
+
+* Pydantic
+
+---
+
+## `prompt_builder.py`
+
+Responsible for:
+
+* system prompts
+* ICP differentiation
+* skill targeting
+* language adaptation
+* output-format instructions
+
+Keeps prompting logic modular and easy to debug.
+
+---
+
+## `generator.py`
+
+Handles:
+
+* model calls
+* retries
+* parsing
+* validation recovery
+* structured output generation
+
+This file acts as the orchestration layer.
+
+---
+
+## `run_demo.py`
+
+Simple CLI utility for:
+
+* testing samples
+* running custom inputs
+* saving outputs locally
+
+Useful during demos and interviews.
+
+---
+
+## `run_batch.py`
+
+Runs all predefined test cases automatically.
+
+Helps validate:
+
+* schema consistency
+* prompt stability
+* ICP variation quality
+
+---
+
+# 🛠️ Tech Stack
+
+## Core Technologies
+
+* Python
+* Groq API
+* Pydantic
+
+## LLM Model
+
+* `llama-3.3-70b-versatile`
+
+---
+
+# 🔐 Validation Strategy
+
+The system validates at multiple layers.
+
+## 1. Input Validation
+
+Before the model call:
+
+* invalid ICP types rejected
+* malformed requests rejected
+* missing fields rejected
+
+---
+
+## 2. Output Validation
+
+After generation:
+
+* schema structure checked
+* required fields verified
+* numeric rubric values validated
+* malformed JSON detected
+
+---
+
+## 3. Retry Mechanism
+
+If the LLM produces:
+
+* incomplete JSON
+* invalid schema
+* malformed output
+
+the system retries automatically up to 3 times.
+
+This significantly improves reliability during demos.
+
+---
+
+# 🌍 Language Support
+
+Supported:
+
+* English (`en`)
+* Hindi (`hi`)
+
+The schema remains identical across languages while only the natural language content changes.
+
+---
+
+# 🎭 Output Schema
+
+The generated JSON includes:
 
 ```json
 {
-  "episode_title": "Sprint Review Delay Escalation",
-  "scene": {
-    "setting": "Wednesday sprint review, 2 days before release, in a video call with engineering and product",
-    "time": "4:30 PM",
-    "context": "You built most of the authentication flow, but one dependency from another service team is still unclear. The product manager wants a firm delivery update in front of the group."
-  },
-  "characters": [
-    {
-      "name": "Priya",
-      "role": "Product Manager",
-      "mood": "Pressured"
-    },
-    {
-      "name": "Rohan",
-      "role": "Tech Lead",
-      "mood": "Watching closely"
-    }
-  ],
-  "antagonist_opening_line": "We have already told stakeholders this will be ready for release. Why are we hearing now that the estimate is still unclear?",
-  "strategy_chips": [
-    {
-      "id": "SC1",
-      "label": "Clarify the dependency gap",
-      "philosophy": "This works because it reduces ambiguity before making a risky commitment and shows that the delay is tied to a concrete blocker, not confusion."
-    },
-    {
-      "id": "SC2",
-      "label": "Acknowledge pressure, then realign on facts",
-      "philosophy": "This works because it de-escalates the public tension while still bringing the conversation back to the current technical reality."
-    },
-    {
-      "id": "SC3",
-      "label": "Offer a bounded next-step plan",
-      "philosophy": "This works because it replaces uncertainty with a visible recovery plan and gives stakeholders a clear decision point."
-    }
-  ],
-  "success_criteria": [
-    "The learner names the unresolved dependency clearly instead of giving a vague answer.",
-    "The learner communicates timeline risk without sounding defensive.",
-    "The learner proposes a concrete next step or checkpoint to restore alignment."
-  ],
-  "rubric": {
-    "communication": 88,
-    "composure": 82,
-    "clarity": 91,
-    "strategy": 86,
-    "outcome": 84
-  },
-  "transfer_targets": [
-    "Communicating blockers to stakeholders",
-    "Handling public pressure in team meetings",
-    "Turning uncertainty into an action plan"
-  ]
+  "episode_title": "",
+  "scene": {},
+  "characters": [],
+  "antagonist_opening_line": "",
+  "strategy_chips": [],
+  "success_criteria": [],
+  "rubric": {},
+  "transfer_targets": []
 }
 ```
 
-## Submission notes
+---
 
-This repository is designed for the challenge deliverables:
+# 💡 Sample Output Highlights
 
-- clean GitHub repo
-- easy local run flow
-- test inputs for varied cases
-- prompt-defense support through `prompt_defense.md`
+The generated scenarios include:
 
-## Future improvements
+* emotional tension
+* public pressure
+* interpersonal conflict
+* strategic communication choices
+* actionable learning transfer
 
-For a production version, I would add:
+Example themes:
 
-- automatic retries for malformed model responses
-- scenario diversity checks across batches
-- snapshot-based output tests
-- richer evaluation metrics for strategy quality
+* missed deadlines
+* customer escalation
+* unclear dependencies
+* workplace pressure
+* leadership communication
+
+---
+
+# 📸 Demo Features
+
+## CLI Demo
+
+Run a predefined sample:
+
+```bash
+python3 src/run_demo.py --sample 0
+```
+
+Run with custom JSON:
+
+```bash
+python3 src/run_demo.py --input-json '{"icp_type":"high_wage","milestone_code":"M03","skill_target":"stakeholder_communication","language":"en"}'
+```
+
+Save generated output:
+
+```bash
+python3 src/run_demo.py --sample 0 --save
+```
+
+---
+
+## Streamlit UI
+
+Launch the UI:
+
+```bash
+streamlit run app.py
+```
+
+---
+
+## Batch Testing
+
+Run all 10 test cases:
+
+```bash
+python3 run_batch.py
+```
+
+---
+
+# 🧪 Test Coverage
+
+`tests/test_inputs.json` contains:
+
+* 5 high_wage scenarios
+* 5 low_wage scenarios
+
+Used to evaluate:
+
+* output consistency
+* language switching
+* difficulty scaling
+* scenario diversity
+
+---
+
+# 🏗️ Setup Instructions
+
+## Clone Repository
+
+```bash
+git clone https://github.com/Diksha159457/ai_challenge_group2.git
+```
+
+---
+
+## Create Virtual Environment
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+---
+
+## Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Configure API Key
+
+```bash
+export GROQ_API_KEY="your_key_here"
+```
+
+---
+
+# 🧠 Interview Talking Points
+
+This repository is optimized for technical discussions and final-round walkthroughs.
+
+Strong areas to explain:
+
+* prompt engineering decisions
+* schema validation strategy
+* retry architecture
+* ICP differentiation logic
+* structured JSON enforcement
+* language abstraction
+* modular file separation
+* production-readiness considerations
+
+---
+
+# 🔥 Why This Project Stands Out
+
+Unlike generic chatbot demos, this system focuses on:
+
+* structured AI generation
+* controllable outputs
+* educational simulations
+* validation-first architecture
+* production-style reliability
+
+This makes it closer to a real AI product workflow than a simple prompt wrapper.
+
+---
+
+# 🚀 Future Improvements
+
+Potential production upgrades:
+
+* automatic malformed-response repair
+* diversity scoring between generated scenarios
+* snapshot-based regression testing
+* evaluator models for scenario quality
+* RAG-based workplace realism enhancement
+* multilingual expansion
+* persistent scenario memory
+* analytics dashboard for learner performance
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome.
+
+1. Fork the repository
+2. Create a new branch
+3. Commit changes
+4. Push updates
+5. Open a Pull Request
+
+---
+
+# 📜 License
+
+MIT License
+
+---
+
+# 👩‍💻 Author
+
+Developed by Diksha Shahi
+
+GitHub: [https://github.com/Diksha159457](https://github.com/Diksha159457)
+
+---
+
+# ⭐ Support
+
+If you found this project useful:
+
+* Star the repository
+* Fork the project
+* Share feedback
+* Contribute improvements
