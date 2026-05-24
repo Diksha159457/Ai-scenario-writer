@@ -340,7 +340,7 @@ streamlit run app.py
 Run all 10 test cases:
 
 ```bash
-python3 run_batch.py
+python3 src/run_batch.py
 ```
 
 ---
