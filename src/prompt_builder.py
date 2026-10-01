@@ -1,11 +1,3 @@
-import json
-
-try:
-    from .schemas import ScenarioInput
-except ImportError:
-    from schemas import ScenarioInput
-
-
 def build_system_prompt() -> str:
     return """You are a scenario writer for an AI-powered career upskilling platform.
 
@@ -82,7 +74,7 @@ OUTPUT SCHEMA — follow exactly, no extra fields, no missing fields:
 
 def build_user_prompt(input_data) -> str:
     # handle both dict and Pydantic object
-    if hasattr(input_data, 'model_dump'):
+    if hasattr(input_data, "model_dump"):
         d = input_data.model_dump()
     else:
         d = input_data
@@ -102,6 +94,7 @@ Remember:
 These must be genuinely different choices with different risks. Not variations of the same approach.
 
 Return only the JSON object. No markdown. No explanation."""
+
 
 def build_prompts(input_data: dict) -> tuple[str, str]:
     return build_system_prompt(), build_user_prompt(input_data)

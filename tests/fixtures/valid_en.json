@@ -1,0 +1,74 @@
+{
+  "episode_title": "The Auth PR Standoff",
+  "scene": {
+    "setting": "Open-plan office, Bengaluru product team",
+    "time": "Tuesday, 10:15 AM standup",
+    "context": "Priya, the tech lead, has flagged the new auth PR two days before release."
+  },
+  "characters": [
+    {
+      "name": "Priya Menon",
+      "role": "Tech Lead",
+      "mood": "impatient"
+    },
+    {
+      "name": "Arjun Rao",
+      "role": "Junior Developer (you)",
+      "mood": "anxious"
+    }
+  ],
+  "antagonist_opening_line": "Arjun, Priya here — three reviewers flagged the same token-refresh bug in your auth PR and release is in 48 hours.",
+  "strategy_chips": [
+    {
+      "id": "SC1",
+      "label": "Own the bug now",
+      "philosophy": "Naming the problem first signals accountability and lowers the lead's anxiety."
+    },
+    {
+      "id": "SC2",
+      "label": "Reframe around release risk",
+      "philosophy": "Shifting to the shared release goal turns blame into joint problem-solving."
+    },
+    {
+      "id": "SC3",
+      "label": "Propose a 2-hour fix plan",
+      "philosophy": "A concrete timed plan buys space without looking evasive."
+    }
+  ],
+  "success_criteria": [
+    "Acknowledges the bug without defensiveness",
+    "Asks one clarifying question about the failure",
+    "Commits to a specific next step and time"
+  ],
+  "rubric": {
+    "communication": {
+      "min_score": 0,
+      "max_score": 85,
+      "what_good_looks_like": "Clear, calm summary of the bug and its impact."
+    },
+    "composure": {
+      "min_score": 0,
+      "max_score": 70,
+      "what_good_looks_like": "Stays steady under public criticism in standup."
+    },
+    "clarity": {
+      "min_score": 0,
+      "max_score": 90,
+      "what_good_looks_like": "States exactly what will be fixed and by when."
+    },
+    "strategy": {
+      "min_score": 0,
+      "max_score": 75,
+      "what_good_looks_like": "Chooses an approach that protects the release date."
+    },
+    "outcome": {
+      "min_score": 0,
+      "max_score": 80,
+      "what_good_looks_like": "Lead agrees to the plan and moves standup on."
+    }
+  },
+  "transfer_targets": [
+    "Handling code review feedback",
+    "Escalating blockers early"
+  ]
+}
