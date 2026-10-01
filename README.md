@@ -1,5 +1,9 @@
 # AI Engineering Challenge – Group 2: Scenario Writer
 
+[![CI](https://github.com/Diksha159457/Ai-scenario-writer/actions/workflows/ci.yml/badge.svg)](https://github.com/Diksha159457/Ai-scenario-writer/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)
+![Pydantic](https://img.shields.io/badge/pydantic-v2-e92063)
+
 An AI-powered scenario generation engine that creates structured workplace simulations for different learner personas using LLMs, prompt engineering, and schema validation.
 
 This project was built for the AI Engineering Challenge and focuses on generating realistic, emotionally grounded practice conversations that can be rendered directly inside a scenario-player application.
@@ -113,21 +117,25 @@ Structured Scenario Output
 # 📂 Project Structure
 
 ```text
-ai_challenge_group2/
-├── README.md
-├── requirements.txt
+Ai-scenario-writer/
+├── app.py                  # Streamlit UI
 ├── prompt_defense.md
-├── app.py
-├── run_batch.py
-│
+├── pyproject.toml
+├── src/
+│   ├── schemas.py          # Pydantic contracts, incl. cross-field rules
+│   ├── quality.py          # input-aware checks (language, specificity)
+│   ├── prompt_builder.py
+│   ├── generator.py        # retry loop with targeted self-correction
+│   ├── evaluate.py         # reliability eval across models
+│   ├── run_demo.py
+│   └── run_batch.py
 ├── tests/
-│   └── test_inputs.json
-│
-└── src/
-    ├── generator.py
-    ├── prompt_builder.py
-    ├── run_demo.py
-    └── schemas.py
+│   ├── test_inputs.json    # 10 sample requests (5 en / 5 hi)
+│   ├── fixtures/           # known-good en + hi scenarios
+│   └── test_generator.py   # 37 offline tests (scripted fake LLM)
+└── .github/workflows/
+    ├── ci.yml              # ruff + pytest on 3.10–3.12
+    └── eval.yml            # on-demand live-model eval
 ```
 
 ---
@@ -218,40 +226,37 @@ Helps validate:
 
 # 🔐 Validation Strategy
 
-The system validates at multiple layers.
+Prompts are requests, not guarantees. Every rule the system prompt states that can be checked mechanically is also enforced in code, and every rejection is fed back to the model.
 
-## 1. Input Validation
+## 1. Input validation
 
-Before the model call:
+`icp_type`, `milestone_code` and `language` are enum-checked. `skill_target` must be `snake_case` (3–60 chars). That also stops free text such as *"ignore previous instructions…"* from being injected into the prompt through the input fields.
 
-* invalid ICP types rejected
-* malformed requests rejected
-* missing fields rejected
+## 2. Schema validation (`schemas.py`)
 
----
+| Rule (from the prompt) | Enforced by |
+|---|---|
+| No extra keys, anywhere | `extra="forbid"` on every output model |
+| Exactly 3 chips, ids `SC1`, `SC2`, `SC3` in order | `ScenarioOutput` cross-field validator |
+| Chips are genuinely different | distinct labels (normalised) |
+| Every rubric axis has `min_score = 0` | `RubricAxis` validator |
+| Each axis has a **different** `max_score` | `Rubric` validator |
+| ≥ 3 distinct success criteria, ≥ 2 transfer targets, ≥ 2 distinct characters | field constraints + validator |
 
-## 2. Output Validation
+Two of these (chip ids, varied rubric scores) were bugs fixed by hand in earlier sample outputs. They're now caught on every run.
 
-After generation:
+## 3. Quality checks (`quality.py`)
 
-* schema structure checked
-* required fields verified
-* numeric rubric values validated
-* malformed JSON detected
+These depend on the request as well as the output:
 
----
+* **Language:** for `hi`, at least 60% of letters must be Devanagari; for `en`, at most 5%.
+* **Specificity:** reject known generic openers; English scenarios must name a character in the opening line or scene.
 
-## 3. Retry Mechanism
+## 4. Self-correcting retries (`generator.py`)
 
-If the LLM produces:
+Each failed attempt is classified (`json` / `schema` / `quality` / `provider`). The next prompt then includes the **exact** errors, e.g. `strategy_chips: ids must be ['SC1','SC2','SC3'] in order`, instead of a generic "try again". Provider errors back off exponentially. If only soft quality issues remain after 3 attempts, the scenario is returned with `warnings` rather than failing the user.
 
-* incomplete JSON
-* invalid schema
-* malformed output
-
-the system retries automatically up to 3 times.
-
-This significantly improves reliability during demos.
+`generate_with_report()` returns the scenario plus a per-attempt trace (error kind, detail, latency), which the eval uses.
 
 ---
 
@@ -349,19 +354,36 @@ python3 src/run_batch.py
 
 ---
 
-# 🧪 Test Coverage
+# 🧪 Testing & Evaluation
 
-`tests/test_inputs.json` contains:
+### Offline test suite
 
-* 5 high_wage scenarios
-* 5 low_wage scenarios
+```bash
+pip install -e ".[dev]"
+pytest --cov=src          # 37 tests, no API key or network needed
+```
 
-Used to evaluate:
+A scripted fake LLM drives the retry loop through every path: first-try success, malformed JSON, schema rejection with targeted feedback, wrong language, provider timeout with backoff, and retries running out. Each schema rule has a test that breaks a known-good fixture in exactly one way.
 
-* output consistency
-* language switching
-* difficulty scaling
-* scenario diversity
+### Live reliability eval
+
+```bash
+export GROQ_API_KEY=gsk_...
+python -m src.evaluate --models llama-3.3-70b-versatile llama-3.1-8b-instant --repeats 2 \
+  --out outputs/eval_report.md
+```
+
+Runs all 10 sample requests per model and reports:
+
+| Metric | Meaning |
+|---|---|
+| Valid 1st try | prompt quality |
+| Valid after retries | system reliability |
+| Avg tries | cost multiplier |
+| p50 / p95 | latency including retries |
+| Rejections by check | which validator the model trips most |
+
+You can also trigger it from the **Actions → Reliability eval** tab (needs a `GROQ_API_KEY` secret). The table is posted to the job summary.
 
 ---
 
@@ -435,9 +457,9 @@ This makes it closer to a real AI product workflow than a simple prompt wrapper.
 
 Potential production upgrades:
 
-* automatic malformed-response repair
+* ~~automatic malformed-response repair~~ ✅ targeted self-correcting retries
 * diversity scoring between generated scenarios
-* snapshot-based regression testing
+* ~~snapshot-based regression testing~~ ✅ fixture-based schema tests + live eval
 * evaluator models for scenario quality
 * RAG-based workplace realism enhancement
 * multilingual expansion

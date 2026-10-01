@@ -2,9 +2,9 @@ import json
 from pathlib import Path
 
 try:
-    from .generator import generate_scenario_json
+    from .generator import ScenarioGenerationError, generate_scenario_json
 except ImportError:
-    from generator import generate_scenario_json
+    from generator import ScenarioGenerationError, generate_scenario_json
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -29,4 +29,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ScenarioGenerationError as error:
+        raise SystemExit(f"Error: {error}") from None

@@ -1,0 +1,32 @@
+name: Reliability eval
+
+# Runs the live-model eval on demand (costs API credits, so not on every push).
+on:
+  workflow_dispatch:
+    inputs:
+      models:
+        description: "Space-separated Groq model ids"
+        default: "llama-3.3-70b-versatile llama-3.1-8b-instant"
+      repeats:
+        description: "Runs per sample input"
+        default: "2"
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    env:
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - run: |
+          python -m src.evaluate --models ${{ inputs.models }} --repeats ${{ inputs.repeats }} \
+            --out outputs/eval_report.md
+          cat outputs/eval_report.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: outputs/eval_report.md
